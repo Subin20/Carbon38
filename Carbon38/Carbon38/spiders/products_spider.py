@@ -1,10 +1,15 @@
-from scrapy.spiders import CrawlSpider,Rule
-from scrapy.linkextractors import LinkExtractor
+import scrapy
 
-class CrawlingSpider(CrawlSpider):
-    name = "carbon"
+
+# from scrapy.spiders import CrawlSpider,Rule
+# from scrapy.linkextractors import LinkExtractor
+
+class CrawlingSpider(scrapy.Spider):
+    name = "products_spider"
     allowed_domains = ["https://www.carbon38.com/"]
     start_urls = ["https://carbon38.com/collections/tops?filter.p.m.custom.available_or_waitlist=1"]
+
+
     #
     # rules = (
     #     Rule(LinkExtractor(allow="catalogue/category")),
@@ -24,14 +29,18 @@ class CrawlingSpider(CrawlSpider):
 
 
     def parse(self,response):
-        for products in response.css('div.ProductItem__Info'):
+         products = response.css('div.ProductItem__Info')
+         for product in products:
             yield {
 
-                "name" : products.css("h2.ProductItem__Title a::text").get(),
-                "price" : products.css("span.ProductItem__Price").get().replace('<span class="ProductItem__Price Price">','').replace('</span>',''),
-                "url" : products.css('h2.ProductItem__Title a').attrib['href'],
+                "name" : product.css("h2.ProductItem__Title a::text").get(),
+                "price" : product.css("span.ProductItem__Price").get().replace('<span class="ProductItem__Price Price">','').replace('</span>',''),
+                "url" : product.css('h2.ProductItem__Title a').attrib['href'],
 
 
             }
 
-
+            # next_page = response.css('[rel="next"] ::attr(href)').get()
+            # if next_page is not None:
+            #     next_page_url = 'https://carbon38.com/collections/tops?filter.p.m.custom.available_or_waitlist=1' + next_page
+            #     yield response.follow(next_page_url,callback=self.parse)
